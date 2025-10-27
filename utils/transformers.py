@@ -6,15 +6,22 @@ antes de enviarlas al frontend
 def simplify_images(product):
     """
     Simplifica solo el campo images, manteniendo el resto del producto intacto
+    Convierte images en un string con la primera imagen
     """
     # Crear una copia del producto para no modificar el original
     simplified = product.copy()
 
-    # Simplificar imágenes: solo extraer el src
+    # Simplificar imágenes: solo extraer el src de la primera imagen
     images = product.get('images', [])
-    if images and isinstance(images, list):
-        # Extraer solo las URLs (src) de las imágenes
-        simplified['images'] = [img.get('src') for img in images if isinstance(img, dict) and img.get('src')]
+    if images and isinstance(images, list) and len(images) > 0:
+        # Tomar solo la primera imagen como string
+        first_image = images[0]
+        if isinstance(first_image, dict) and first_image.get('src'):
+            simplified['images'] = first_image.get('src')
+        else:
+            simplified['images'] = None
+    else:
+        simplified['images'] = None
 
     return simplified
 
