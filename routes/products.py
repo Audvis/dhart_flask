@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services import wc_service
+from utils.transformers import transform_products, transform_product_minimal
 
 products_bp = Blueprint('products', __name__)
 
@@ -7,6 +8,9 @@ products_bp = Blueprint('products', __name__)
 def get_products():
     """
     Obtiene la lista de productos
+
+    Por defecto devuelve solo: id, name, price, images (optimizado)
+
     Query params opcionales:
     - page: número de página (default: 1)
     - per_page: productos por página (default: 10)
@@ -19,6 +23,10 @@ def get_products():
     - max_price: precio máximo
     - orderby: ordenar por (date, id, title, price)
     - order: orden (asc, desc)
+    - _fields: campos específicos a devolver (ej: id,name,price,stock_status)
+    - all_fields: true para obtener TODOS los campos de WooCommerce
+    - raw: true para obtener datos sin transformar (opcional)
+    - minimal: true para obtener versión minimalista (opcional)
     """
     params = {}
 
@@ -50,21 +58,76 @@ def get_products():
     if request.args.get('order'):
         params['order'] = request.args.get('order')
 
+    # Filtro de campos específicos (WooCommerce _fields)
+    # Por defecto, solo traer campos necesarios para mejor performance
+    if request.args.get('_fields'):
+        params['_fields'] = request.args.get('_fields')
+    elif request.args.get('all_fields', 'false').lower() != 'true':
+        # Campos por defecto para reducir tamaño de respuesta
+        # Usa ?all_fields=true para obtener todos los campos
+        params['_fields'] = 'id,name,price,images'
+
     result = wc_service.get('products', params=params)
 
     if result['success']:
-        return jsonify(result['data']), result['status_code']
+        # Si se especificó _fields, devolver datos raw por defecto
+        # (a menos que se solicite explícitamente transformación)
+        raw = request.args.get('raw', 'false').lower() == 'true'
+        minimal = request.args.get('minimal', 'false').lower() == 'true'
+        transform = request.args.get('transform', 'false').lower() == 'true'
+
+        # Si se usó _fields, devolver raw a menos que se pida transform
+        if '_fields' in params and not transform:
+            data = result['data']
+        elif raw:
+            # Devolver datos sin transformar
+            data = result['data']
+        elif minimal:
+            # Versión minimalista
+            data = [transform_product_minimal(p) for p in result['data']]
+        else:
+            # Transformación por defecto solo si no se especificó _fields
+            data = result['data'] if '_fields' in params else transform_products(result['data'])
+
+        return jsonify(data), result['status_code']
     else:
         return jsonify({'error': result['error']}), result['status_code']
 
 
 @products_bp.route('/<int:product_id>', methods=['GET'])
 def get_product(product_id):
-    """Obtiene un producto específico por ID"""
-    result = wc_service.get(f'products/{product_id}')
+    """
+    Obtiene un producto específico por ID
+    Query params opcionales:
+    - _fields: campos específicos a devolver (ej: id,name,price,images)
+    - all_fields: true para obtener todos los campos
+    - raw: true para obtener datos sin transformar
+    """
+    params = {}
+
+    # Filtro de campos específicos
+    if request.args.get('_fields'):
+        params['_fields'] = request.args.get('_fields')
+    elif request.args.get('all_fields', 'false').lower() != 'true':
+        # Por defecto, campos básicos para mejor performance
+        params['_fields'] = 'id,name,price,images'
+
+    result = wc_service.get(f'products/{product_id}', params=params)
 
     if result['success']:
-        return jsonify(result['data']), result['status_code']
+        raw = request.args.get('raw', 'false').lower() == 'true'
+        transform = request.args.get('transform', 'false').lower() == 'true'
+
+        # Si se usó _fields, devolver raw a menos que se pida transform
+        if '_fields' in params and not transform:
+            data = result['data']
+        elif raw:
+            data = result['data']
+        else:
+            # Transformación por defecto solo si no se especificó _fields
+            data = result['data'] if '_fields' in params else transform_products(result['data'])
+
+        return jsonify(data), result['status_code']
     else:
         return jsonify({'error': result['error']}), result['status_code']
 

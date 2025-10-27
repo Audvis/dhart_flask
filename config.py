@@ -23,12 +23,6 @@ class Config:
     WOOCOMMERCE_CONSUMER_KEY = os.getenv('WOOCOMMERCE_CONSUMER_KEY')
     WOOCOMMERCE_CONSUMER_SECRET = os.getenv('WOOCOMMERCE_CONSUMER_SECRET')
 
-    # Debug: Imprimir valores cargados
-    print(f"[CONFIG] Archivo .env: {ENV_FILE}")
-    print(f"[CONFIG] .env existe: {ENV_FILE.exists()}")
-    print(f"[CONFIG] WOOCOMMERCE_URL: {WOOCOMMERCE_URL}")
-    print(f"[CONFIG] CONSUMER_KEY configurado: {'Sí' if WOOCOMMERCE_CONSUMER_KEY else 'No'}")
-
     # CORS
     ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 

@@ -27,16 +27,7 @@ class WooCommerceService:
     def get(self, endpoint, params=None):
         """Realiza una petición GET a la API de WooCommerce"""
         try:
-            # Log para debug
-            full_url = f"{Config.WOOCOMMERCE_URL}/wp-json/wc/v3/{endpoint}"
-            print(f"[DEBUG] Llamando a: {full_url}")
-            print(f"[DEBUG] Params: {params}")
-
             response = self.wcapi.get(endpoint, params=params)
-
-            print(f"[DEBUG] Status Code: {response.status_code}")
-            print(f"[DEBUG] URL final: {response.url}")
-            print(f"[DEBUG] Content-Type: {response.headers.get('Content-Type', 'N/A')}")
 
             # Verificar si la respuesta es exitosa
             if response.status_code >= 400:
