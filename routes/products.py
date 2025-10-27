@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services import wc_service
-from utils.transformers import transform_products, transform_product_minimal
+from utils.transformers import simplify_products_images, transform_products, transform_product_minimal
 
 products_bp = Blueprint('products', __name__)
 
@@ -70,24 +70,23 @@ def get_products():
     result = wc_service.get('products', params=params)
 
     if result['success']:
-        # Si se especificó _fields, devolver datos raw por defecto
-        # (a menos que se solicite explícitamente transformación)
+        # Opciones de transformación
         raw = request.args.get('raw', 'false').lower() == 'true'
         minimal = request.args.get('minimal', 'false').lower() == 'true'
         transform = request.args.get('transform', 'false').lower() == 'true'
 
-        # Si se usó _fields, devolver raw a menos que se pida transform
-        if '_fields' in params and not transform:
-            data = result['data']
-        elif raw:
-            # Devolver datos sin transformar
+        if raw:
+            # Devolver datos sin transformar (imágenes completas)
             data = result['data']
         elif minimal:
             # Versión minimalista
             data = [transform_product_minimal(p) for p in result['data']]
+        elif transform:
+            # Transformación completa (agrega campos calculados)
+            data = transform_products(result['data'])
         else:
-            # Transformación por defecto solo si no se especificó _fields
-            data = result['data'] if '_fields' in params else transform_products(result['data'])
+            # Por defecto: solo simplificar imágenes, mantener resto igual
+            data = simplify_products_images(result['data'])
 
         return jsonify(data), result['status_code']
     else:
@@ -118,14 +117,15 @@ def get_product(product_id):
         raw = request.args.get('raw', 'false').lower() == 'true'
         transform = request.args.get('transform', 'false').lower() == 'true'
 
-        # Si se usó _fields, devolver raw a menos que se pida transform
-        if '_fields' in params and not transform:
+        if raw:
+            # Devolver datos sin transformar (imágenes completas)
             data = result['data']
-        elif raw:
-            data = result['data']
+        elif transform:
+            # Transformación completa (agrega campos calculados)
+            data = transform_products(result['data'])
         else:
-            # Transformación por defecto solo si no se especificó _fields
-            data = result['data'] if '_fields' in params else transform_products(result['data'])
+            # Por defecto: solo simplificar imágenes, mantener resto igual
+            data = simplify_products_images(result['data'])
 
         return jsonify(data), result['status_code']
     else:

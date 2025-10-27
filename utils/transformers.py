@@ -3,12 +3,37 @@ Transformadores para modificar las respuestas de WooCommerce
 antes de enviarlas al frontend
 """
 
+def simplify_images(product):
+    """
+    Simplifica solo el campo images, manteniendo el resto del producto intacto
+    """
+    # Crear una copia del producto para no modificar el original
+    simplified = product.copy()
+
+    # Simplificar imágenes: solo extraer el src
+    images = product.get('images', [])
+    if images and isinstance(images, list):
+        # Extraer solo las URLs (src) de las imágenes
+        simplified['images'] = [img.get('src') for img in images if isinstance(img, dict) and img.get('src')]
+
+    return simplified
+
+
+def simplify_products_images(products):
+    """
+    Simplifica imágenes en una lista de productos o un solo producto
+    """
+    if isinstance(products, list):
+        return [simplify_images(product) for product in products]
+    return simplify_images(products)
+
+
 def transform_product(product):
     """
     Transforma un producto individual de WooCommerce
     Aquí puedes agregar, eliminar o modificar campos
     """
-    # Ejemplo: extraer solo los campos que necesitas
+    # Extraer campos del producto
     transformed = {
         'id': product.get('id'),
         'name': product.get('name'),
@@ -22,7 +47,6 @@ def transform_product(product):
         'description': product.get('description'),
         'short_description': product.get('short_description'),
         'categories': product.get('categories', []),
-        'images': product.get('images', []),
         'attributes': product.get('attributes', []),
 
         # Agregar campos calculados o personalizados
@@ -38,10 +62,13 @@ def transform_product(product):
         'currency': 'USD',  # o desde configuración
     }
 
-    # Transformar imágenes a un formato más simple
-    if transformed['images']:
-        transformed['thumbnail'] = transformed['images'][0].get('src') if transformed['images'] else None
-        transformed['gallery'] = [img.get('src') for img in transformed['images']]
+    # Simplificar imágenes: solo extraer el src
+    images = product.get('images', [])
+    if images:
+        # Extraer solo las URLs (src) de las imágenes
+        transformed['images'] = [img.get('src') for img in images if img.get('src')]
+    else:
+        transformed['images'] = []
 
     return transformed
 
