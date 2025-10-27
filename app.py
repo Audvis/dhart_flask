@@ -1,10 +1,11 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from config import Config
 from routes.products import products_bp
 from routes.categories import categories_bp
 from routes.orders import orders_bp
 from routes.customers import customers_bp
+from services import wc_service
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -33,13 +34,21 @@ def index():
             'products': '/api/products',
             'categories': '/api/categories',
             'orders': '/api/orders',
-            'customers': '/api/customers'
+            'customers': '/api/customers',
+            'test': '/api/test'
         }
     }
 
 @app.route('/health')
 def health():
     return {'status': 'healthy'}
+
+@app.route('/api/test')
+def test_woocommerce():
+    """Endpoint para probar la conexión con WooCommerce"""
+    result = wc_service.test_connection()
+    status_code = result.pop('status_code', 200)
+    return jsonify(result), status_code
 
 if __name__ == '__main__':
     app.run(

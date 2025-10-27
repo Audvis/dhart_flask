@@ -1,7 +1,13 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Obtener el directorio base del proyecto
+BASE_DIR = Path(__file__).resolve().parent
+ENV_FILE = BASE_DIR / '.env'
+
+# Cargar variables de entorno desde el archivo .env
+load_dotenv(dotenv_path=ENV_FILE)
 
 class Config:
     """Configuración de la aplicación Flask"""
@@ -13,9 +19,15 @@ class Config:
     PORT = int(os.getenv('FLASK_PORT', 5000))
 
     # WooCommerce
-    WOOCOMMERCE_URL = os.getenv('WOOCOMMERCE_URL')
+    WOOCOMMERCE_URL = os.getenv('WOOCOMMERCE_URL', 'https://tu-tienda.com')
     WOOCOMMERCE_CONSUMER_KEY = os.getenv('WOOCOMMERCE_CONSUMER_KEY')
     WOOCOMMERCE_CONSUMER_SECRET = os.getenv('WOOCOMMERCE_CONSUMER_SECRET')
+
+    # Debug: Imprimir valores cargados
+    print(f"[CONFIG] Archivo .env: {ENV_FILE}")
+    print(f"[CONFIG] .env existe: {ENV_FILE.exists()}")
+    print(f"[CONFIG] WOOCOMMERCE_URL: {WOOCOMMERCE_URL}")
+    print(f"[CONFIG] CONSUMER_KEY configurado: {'Sí' if WOOCOMMERCE_CONSUMER_KEY else 'No'}")
 
     # CORS
     ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
