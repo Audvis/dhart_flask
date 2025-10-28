@@ -14,18 +14,32 @@ class WooCommerceService:
 
     def _initialize(self):
         """Inicializa la conexión con WooCommerce"""
-        Config.validate()
+        try:
+            Config.validate()
 
-        self.wcapi = API(
-            url=Config.WOOCOMMERCE_URL,
-            consumer_key=Config.WOOCOMMERCE_CONSUMER_KEY,
-            consumer_secret=Config.WOOCOMMERCE_CONSUMER_SECRET,
-            version="wc/v3",
-            timeout=30
-        )
+            self.wcapi = API(
+                url=Config.WOOCOMMERCE_URL,
+                consumer_key=Config.WOOCOMMERCE_CONSUMER_KEY,
+                consumer_secret=Config.WOOCOMMERCE_CONSUMER_SECRET,
+                version="wc/v3",
+                timeout=30
+            )
+            print(f"[WooCommerce] Conectado a: {Config.WOOCOMMERCE_URL}")
+        except Exception as e:
+            print(f"[WooCommerce] Error al inicializar: {e}")
+            # No lanzar error, permitir que la app inicie
+            # Los endpoints devolverán error cuando se usen
+            self.wcapi = None
 
     def get(self, endpoint, params=None):
         """Realiza una petición GET a la API de WooCommerce"""
+        if self.wcapi is None:
+            return {
+                'success': False,
+                'error': 'WooCommerce no está configurado. Verifica las variables de entorno.',
+                'status_code': 500
+            }
+
         try:
             response = self.wcapi.get(endpoint, params=params)
 

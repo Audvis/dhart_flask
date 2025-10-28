@@ -6,8 +6,13 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent
 ENV_FILE = BASE_DIR / '.env'
 
-# Cargar variables de entorno desde el archivo .env
-load_dotenv(dotenv_path=ENV_FILE)
+# Cargar variables de entorno desde el archivo .env (si existe)
+# En producción, las variables vienen del sistema, no del archivo
+if ENV_FILE.exists():
+    load_dotenv(dotenv_path=ENV_FILE)
+else:
+    # En producción, las variables ya están en el entorno
+    load_dotenv()
 
 class Config:
     """Configuración de la aplicación Flask"""

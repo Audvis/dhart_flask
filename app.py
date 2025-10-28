@@ -41,7 +41,27 @@ def index():
 
 @app.route('/health')
 def health():
-    return {'status': 'healthy'}
+    """Health check básico"""
+    import os
+    return {
+        'status': 'healthy',
+        'env': os.getenv('FLASK_ENV', 'not set'),
+        'woocommerce_configured': wc_service.wcapi is not None
+    }
+
+@app.route('/api/config')
+def check_config():
+    """Verifica el estado de la configuración"""
+    import os
+    return jsonify({
+        'flask_env': os.getenv('FLASK_ENV', 'not set'),
+        'woocommerce_url': os.getenv('WOOCOMMERCE_URL', 'not set'),
+        'consumer_key_set': bool(os.getenv('WOOCOMMERCE_CONSUMER_KEY')),
+        'consumer_secret_set': bool(os.getenv('WOOCOMMERCE_CONSUMER_SECRET')),
+        'allowed_origins': os.getenv('ALLOWED_ORIGINS', 'not set'),
+        'port': os.getenv('PORT', 'not set'),
+        'woocommerce_service_initialized': wc_service.wcapi is not None
+    })
 
 @app.route('/api/test')
 def test_woocommerce():
