@@ -21,7 +21,10 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     DEBUG = os.getenv('FLASK_DEBUG', 'True') == 'True'
     HOST = os.getenv('FLASK_HOST', '0.0.0.0')
-    PORT = int(os.getenv('FLASK_PORT', 5000))
+
+    # Puerto: primero intenta PORT (producción), luego FLASK_PORT, por defecto 5000
+    port_env = os.getenv('PORT') or os.getenv('FLASK_PORT') or '5000'
+    PORT = int(port_env) if port_env else 5000
 
     # WooCommerce
     WOOCOMMERCE_URL = os.getenv('WOOCOMMERCE_URL', 'https://tu-tienda.com')
