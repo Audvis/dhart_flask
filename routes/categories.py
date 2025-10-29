@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services import wc_service
+from utils.transformers import transform_categories_minimal
 
 categories_bp = Blueprint('categories', __name__)
 
@@ -41,18 +42,39 @@ def get_categories():
     result = wc_service.get('products/categories', params=params)
 
     if result['success']:
-        return jsonify(result['data']), result['status_code']
+        # Por defecto, devolver versión simplificada (id, name, slug)
+        # Usar ?raw=true para obtener datos completos de WooCommerce
+        raw = request.args.get('raw', 'false').lower() == 'true'
+
+        if raw:
+            data = result['data']
+        else:
+            data = transform_categories_minimal(result['data'])
+
+        return jsonify(data), result['status_code']
     else:
         return jsonify({'error': result['error']}), result['status_code']
 
 
 @categories_bp.route('/<int:category_id>', methods=['GET'])
 def get_category(category_id):
-    """Obtiene una categoría específica por ID"""
+    """
+    Obtiene una categoría específica por ID
+    Query params opcionales:
+    - raw: true para obtener datos completos de WooCommerce
+    """
     result = wc_service.get(f'products/categories/{category_id}')
 
     if result['success']:
-        return jsonify(result['data']), result['status_code']
+        # Por defecto, devolver versión simplificada (id, name, slug)
+        raw = request.args.get('raw', 'false').lower() == 'true'
+
+        if raw:
+            data = result['data']
+        else:
+            data = transform_categories_minimal(result['data'])
+
+        return jsonify(data), result['status_code']
     else:
         return jsonify({'error': result['error']}), result['status_code']
 

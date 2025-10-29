@@ -136,3 +136,23 @@ def transform_product_detailed(product):
     })
 
     return base
+
+
+def transform_category_minimal(category):
+    """
+    Transforma una categoría a su versión mínima con solo id, name y slug
+    """
+    return {
+        'id': category.get('id'),
+        'name': category.get('name'),
+        'slug': category.get('slug'),
+    }
+
+
+def transform_categories_minimal(categories):
+    """
+    Transforma una lista de categorías a su versión mínima
+    """
+    if isinstance(categories, list):
+        return [transform_category_minimal(category) for category in categories]
+    return transform_category_minimal(categories)
