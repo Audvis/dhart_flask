@@ -65,7 +65,7 @@ def get_products():
     elif request.args.get('all_fields', 'false').lower() != 'true':
         # Campos por defecto para reducir tamaño de respuesta
         # Usa ?all_fields=true para obtener todos los campos
-        params['_fields'] = 'id,name,price,images'
+        params['_fields'] = 'id,name,price,images,categories'
 
     result = wc_service.get('products', params=params)
 
@@ -109,7 +109,7 @@ def get_product(product_id):
         params['_fields'] = request.args.get('_fields')
     elif request.args.get('all_fields', 'false').lower() != 'true':
         # Por defecto, campos básicos para mejor performance
-        params['_fields'] = 'id,name,price,images'
+        params['_fields'] = 'id,name,price,images,categories'
 
     result = wc_service.get(f'products/{product_id}', params=params)
 
