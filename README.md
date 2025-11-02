@@ -11,25 +11,35 @@ Backend Flask que actúa como proxy seguro entre tu aplicación Next.js y la API
 - Manejo de errores robusto
 - Soporte para operaciones CRUD completas
 - Operaciones en lote (batch)
+- **Servidor MCP (Model Context Protocol)** para integración con asistentes de IA
 
 ## Estructura del Proyecto
 
 ```
 dhart_backend/
 ├── app.py                  # Aplicación principal Flask
+├── mcp_server.py           # Servidor MCP para asistentes de IA
 ├── config.py               # Configuración de la aplicación
 ├── requirements.txt        # Dependencias Python
 ├── .env.example           # Ejemplo de variables de entorno
+├── .env.mcp.example       # Ejemplo de variables para MCP
 ├── .gitignore             # Archivos a ignorar en Git
+├── MCP_README.md          # Documentación del servidor MCP
 ├── services/
 │   ├── __init__.py
 │   └── woocommerce.py     # Servicio de conexión a WooCommerce
-└── routes/
-    ├── __init__.py
-    ├── products.py        # Endpoints de productos
-    ├── categories.py      # Endpoints de categorías
-    ├── orders.py          # Endpoints de pedidos
-    └── customers.py       # Endpoints de clientes
+├── routes/
+│   ├── __init__.py
+│   ├── products.py        # Endpoints de productos
+│   ├── categories.py      # Endpoints de categorías
+│   ├── orders.py          # Endpoints de pedidos
+│   └── customers.py       # Endpoints de clientes
+└── documentation/
+    ├── DEPLOYMENT.md              # Guía de despliegue
+    ├── POSTMAN_GUIDE.md           # Guía de Postman
+    ├── TRANSFORMERS_GUIDE.md      # Guía de transformadores
+    ├── TROUBLESHOOTING.md         # Solución de problemas
+    └── INSTRUCCIONES_WINDOWS.md   # Instrucciones para Windows
 ```
 
 ## Instalación
@@ -275,6 +285,69 @@ Crea un archivo `.env.local` en tu proyecto Next.js:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
+
+## Servidor MCP (Model Context Protocol)
+
+Este backend incluye un servidor MCP que permite a asistentes de IA como Claude interactuar con tu tienda WooCommerce de forma segura.
+
+### ¿Qué es MCP?
+
+MCP (Model Context Protocol) es un protocolo estándar que permite a los asistentes de IA conectarse con herramientas y servicios externos. Con el servidor MCP de este backend, puedes:
+
+- Listar y buscar productos con lenguaje natural
+- Crear y actualizar productos sin escribir código
+- Gestionar pedidos y clientes conversacionalmente
+- Automatizar tareas de tu tienda con IA
+
+### Características del Servidor MCP
+
+- **25+ herramientas** para productos, categorías, pedidos y clientes
+- Soporte completo para operaciones CRUD
+- Filtrado avanzado y búsqueda
+- Recursos para verificar salud y configuración del backend
+- Integración directa con Claude Desktop y otros clientes MCP
+
+### Inicio Rápido con MCP
+
+1. Instala las dependencias del MCP:
+```bash
+pip install -r requirements.txt
+```
+
+2. Configura tu archivo `.env` con `BACKEND_URL`:
+```bash
+BACKEND_URL=http://localhost:5000
+```
+
+3. Ejecuta el servidor MCP:
+```bash
+python mcp_server.py
+```
+
+4. **Para usar con Claude Desktop**, agrega esta configuración a tu `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "dhart-backend": {
+      "command": "python",
+      "args": ["/ruta/absoluta/a/mcp_server.py"],
+      "env": {
+        "BACKEND_URL": "http://localhost:5000"
+      }
+    }
+  }
+}
+```
+
+### Documentación Completa del MCP
+
+Para más información sobre cómo usar el servidor MCP, consulta **[MCP_README.md](./MCP_README.md)** que incluye:
+
+- Lista completa de herramientas disponibles
+- Ejemplos de uso con asistentes de IA
+- Configuración avanzada
+- Solución de problemas del MCP
 
 ## Seguridad
 
